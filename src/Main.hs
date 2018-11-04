@@ -6,4 +6,5 @@ import Util
 
 main :: IO ()
 main = do
-  slurp 3
+  file <- slurp 3
+  putStrLn file
