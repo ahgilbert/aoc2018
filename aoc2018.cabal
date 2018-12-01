@@ -21,3 +21,4 @@ executable aoc2018
                      , megaparsec
                      , containers
   other-modules: Util
+               , P01
