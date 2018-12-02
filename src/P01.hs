@@ -2,14 +2,10 @@
 
 module P01 where
 
-import Data.Void
 import Data.Either
 import qualified Data.Set as S
-import Util
+import Util (slurp, parseInt)
 import Text.Megaparsec
-import Text.Megaparsec.Char
-
-type Parser = Parsec Void String
 
 p01 :: IO ()
 p01 = do
@@ -30,18 +26,3 @@ folder :: (Ord a) => (Bool, a, S.Set a) -> a -> (Bool, a, S.Set a)
 folder (_,_,s) x
   | S.member x s = (True, x, s)
   | otherwise = (False, x, S.insert x s)
-
-parsePosInt :: Parser Int
-parsePosInt = do
-  string "+"
-  digits <- many digitChar
-  return $ read digits
-
-parseNegInt :: Parser Int
-parseNegInt = do
-  string "-"
-  digits <- many digitChar
-  return $ 0 - (read digits)
-
-parseInt :: Parser Int
-parseInt = choice [parseNegInt, parsePosInt]
