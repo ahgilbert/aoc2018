@@ -14,7 +14,7 @@ p02_1 = do
 
 p02_2 :: IO ()
 p02_2 = do
-  pairs <- allPairs <$> lines <$> slurp 2
+  pairs <- uniquePairs <$> lines <$> slurp 2
   let origLen = length $ fst $ head pairs
   let answer = map reportMatches pairs
               |> filter (\ms -> length ms == (origLen - 1))
@@ -28,9 +28,6 @@ hasNlet n cs@(c:_) =
   in if (length run) == n
      then True
      else hasNlet n (dropWhile (== c) cs)
-
-allPairs :: Ord a => [a] -> [(a,a)]
-allPairs xs = [(a,b) | a <- xs, b <- xs, a < b]
 
 reportMatches :: (Eq a) => ([a],[a]) -> [a]
 reportMatches (as,bs) =

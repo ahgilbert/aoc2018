@@ -24,6 +24,9 @@ slurp i = do
   contents <- readFile filename
   return $ fromString contents
 
+uniquePairs :: Ord a => [a] -> [(a,a)]
+uniquePairs xs = [(a,b) | a <- xs, b <- xs, a < b]
+
 parsePosInt :: Parser Int
 parsePosInt = do
   string "+"
