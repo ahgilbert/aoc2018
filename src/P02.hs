@@ -18,7 +18,7 @@ p02_2 = do
   let origLen = length $ fst $ head pairs
   let answer = map reportMatches pairs
               |> filter (\ms -> length ms == (origLen - 1))
-  print $ head answer -- There will be two identical matches
+  print answer
 
 -- assumes a sorted list
 hasNlet :: (Eq a) => Int -> [a] -> Bool
@@ -29,8 +29,8 @@ hasNlet n cs@(c:_) =
      then True
      else hasNlet n (dropWhile (== c) cs)
 
-allPairs :: [a] -> [(a,a)]
-allPairs xs = [(a,b) | a <- xs, b <- xs]
+allPairs :: Ord a => [a] -> [(a,a)]
+allPairs xs = [(a,b) | a <- xs, b <- xs, a < b]
 
 reportMatches :: (Eq a) => ([a],[a]) -> [a]
 reportMatches (as,bs) =
