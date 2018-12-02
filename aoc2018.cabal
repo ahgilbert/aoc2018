@@ -22,3 +22,4 @@ executable aoc2018
                      , containers
   other-modules: Util
                , P01
+               , P02
