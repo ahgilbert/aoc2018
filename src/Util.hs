@@ -10,6 +10,14 @@ import Text.Megaparsec.Char
 
 type Parser = Parsec Void String
 
+(|>) :: a -> (a -> b) -> b
+(|>) = flip ($)
+infixl 0 |>
+
+(||>) :: Functor f => f a -> (a -> b) -> f b
+(||>) = flip (<$>)
+infixl 4 ||>
+
 slurp :: IsString a => Int -> IO a
 slurp i = do
   let filename = printf "inputs/%02d.txt" i

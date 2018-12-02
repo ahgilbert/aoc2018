@@ -7,4 +7,5 @@ import P02
 
 main :: IO ()
 main = do
+  p02_1
   p02_2
