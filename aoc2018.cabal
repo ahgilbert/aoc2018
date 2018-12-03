@@ -20,6 +20,7 @@ executable aoc2018
   build-depends:       base >= 4.7 && < 5
                      , megaparsec
                      , containers
+                     , array
   other-modules: Util
                , P01
                , P02

@@ -8,5 +8,4 @@ import P03
 
 main :: IO ()
 main = do
-  p03_1
-  p03_2
+  p03
