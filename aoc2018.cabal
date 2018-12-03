@@ -25,3 +25,4 @@ executable aoc2018
                , P01
                , P02
                , P03
+               , P04
