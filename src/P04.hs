@@ -12,8 +12,9 @@ p04 :: IO ()
 p04 = do
   input <- sort <$> lines <$> slurp 104
   let log = rights $ map (runParser parseShiftEvent "") input
-  print $ sumSleep log
-  print $ fmap length $ sumSleep log
+  let naps = sumSleeps log
+  print $ naps
+  print $ (fmap . fmap) length naps
 
 type LogEntry = (Timestamp, ShiftEvent)
 
@@ -29,10 +30,16 @@ data Timestamp = TS { y :: Int, mo :: Int, d :: Int, h :: Int, mi :: Int }
 getGuard (_, (BeginShift x)) = x
 getGuard _ = undefined
 
+sumSleeps :: [LogEntry] -> [(Int, [Int])]
+sumSleeps [] = []
+sumSleeps log =
+  let shift = sumSleep log
+  in (shift:(sumSleeps $ dropWhile (not . newShift . snd) (tail log)))
+
 sumSleep :: [LogEntry] -> (Int, [Int])
-sumSleep shifts =
-  let guard = getGuard (head shifts)
-      thisShift = takeWhile (not . newShift . snd) (tail shifts)
+sumSleep log =
+  let guard = getGuard (head log)
+      thisShift = takeWhile (not . newShift . snd) (tail log)
       minutesSlept = calcShift thisShift
   in (guard, minutesSlept)
 
