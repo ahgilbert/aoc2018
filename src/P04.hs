@@ -5,16 +5,23 @@ module P04 where
 import Util
 import Data.Either
 import Data.List
+import qualified Data.Map.Strict as M
+import Data.Maybe
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
 p04 :: IO ()
 p04 = do
-  input <- sort <$> lines <$> slurp 104
+  input <- sort <$> lines <$> slurp 4
   let log = rights $ map (runParser parseShiftEvent "") input
-  let naps = sumSleeps log
-  print $ naps
-  print $ (fmap . fmap) length naps
+      naps = sumSleeps log
+  let allNaps = M.fromListWith (++) naps
+      lazyGuard = fst $ maximumBy (\(_,a) (_,b) -> compare a b) $ M.toList $ fmap length allNaps
+      napMinutes = fromJust $ fmap (group . sort) (M.lookup lazyGuard allNaps)
+      laziestMinute = head $ maximumBy (\a b -> compare (length a) (length b)) $ napMinutes
+  print lazyGuard
+  print laziestMinute
+  print $ lazyGuard * laziestMinute
 
 type LogEntry = (Timestamp, ShiftEvent)
 
