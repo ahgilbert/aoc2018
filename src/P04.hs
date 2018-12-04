@@ -3,6 +3,7 @@
 module P04 where
 
 import Util
+import Data.Either
 import Data.List
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -10,24 +11,48 @@ import Text.Megaparsec.Char
 p04 :: IO ()
 p04 = do
   input <- sort <$> lines <$> slurp 104
-  mapM_ print input
+  let shiftEvents = rights $ map (runParser parseShiftEvent "") input
+  mapM_ print shiftEvents
+
+type LogEntry = (Timestamp, ShiftEvent)
 
 data ShiftEvent =
     BeginShift Int
   | FallsAsleep
   | WakesUp
+  deriving (Show)
 
 data Timestamp = TS { y :: Int, mo :: Int, d :: Int, h :: Int, mi :: Int }
+  deriving (Show)
+
+getGuard (_, (BeginShift x)) = x
+getGuard _ = undefined
+
+sumSleep :: [LogEntry] -> (Int, [Int])
+sumSleep shifts =
+  let guard = getGuard (head shifts)
+      thisShift = takeWhile (not . newShift . snd) (tail shifts)
+      minutesSlept = calcShift thisShift
+  in (guard, minutesSlept)
+
+calcShift :: [LogEntry] -> [Int]
+calcShift [] = []
+calcShift (begin:end:es) =
+  let span = [(mi (fst begin))..(mi (fst end))]
+  in span ++ (calcShift es)
+
+newShift (BeginShift _) = True
+newShift _ = False
 
 ------------- parsers ------------------
 
-parseShiftEvent :: Parser ShiftEvent
-parseShiftEvent =
-  choice [
-    parseWakesUp,
-    parseFallsAsleep,
-    parseShiftStart
-  ]
+parseShiftEvent :: Parser (Timestamp, ShiftEvent)
+parseShiftEvent = do
+  time <- parseTimestamp
+  event <- choice [parseWakesUp,
+                   parseFallsAsleep,
+                   parseShiftStart]
+  return (time, event)
 
 parseTimestamp :: Parser Timestamp
 parseTimestamp = do
@@ -60,7 +85,6 @@ parseFallsAsleep = do
 
 parseShiftStart :: Parser ShiftEvent
 parseShiftStart = do
-  timestamp <- parseTimestamp
   string "Guard #"
   guardId <- read <$> some digitChar
   space
