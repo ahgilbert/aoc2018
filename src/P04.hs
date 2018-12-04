@@ -10,19 +10,6 @@ import Data.Maybe
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
-p04 :: IO ()
-p04 = do
-  input <- sort <$> lines <$> slurp 4
-  let log = rights $ map (runParser parseShiftEvent "") input
-      naps = sumSleeps log
-  let allNaps = M.fromListWith (++) naps
-      lazyGuard = fst $ maximumBy (\(_,a) (_,b) -> compare a b) $ M.toList $ fmap length allNaps
-      napMinutes = fromJust $ fmap (group . sort) (M.lookup lazyGuard allNaps)
-      laziestMinute = head $ maximumBy (\a b -> compare (length a) (length b)) $ napMinutes
-  print lazyGuard
-  print laziestMinute
-  print $ lazyGuard * laziestMinute
-
 type LogEntry = (Timestamp, ShiftEvent)
 
 data ShiftEvent =
@@ -33,6 +20,30 @@ data ShiftEvent =
 
 data Timestamp = TS { y :: Int, mo :: Int, d :: Int, h :: Int, mi :: Int }
   deriving (Show)
+
+p04 :: IO ()
+p04 = do
+  input <- sort <$> lines <$> slurp 4
+  let log = rights $ map (runParser parseShiftEvent "") input
+      naps = sumSleeps log
+  let allNaps = M.fromListWith (++) naps
+      lazyGuard = fst $ maximumBy (\(_,a) (_,b) -> compare a b) $ M.toList $ fmap length allNaps
+      napMinutes = fromJust $ M.lookup lazyGuard allNaps
+      laziestMinute = fst . fromJust $ mode napMinutes
+      guardDrowsyMinutes = map (fmap fromJust) $ filter (\(_,j) -> isJust j) $ M.toList $ fmap mode allNaps
+      consistentGuard = maximumBy (\(_,(_,a)) (_,(_,b)) -> compare a b) guardDrowsyMinutes
+  print $ "part 1: " <> show (lazyGuard * laziestMinute)
+  print $ "part 2: " <> show ((\(g,(m,_)) -> g * m) consistentGuard)
+
+mode :: (Ord a) => [a] -> Maybe (a, Int)
+mode [] = Nothing
+mode as =
+  as
+  |> sort
+  |> group
+  |> maximumBy (\a b -> compare (length a) (length b))
+  |> (\v -> (head v, length v))
+  |> Just
 
 getGuard (_, (BeginShift x)) = x
 getGuard _ = undefined
