@@ -11,8 +11,9 @@ import Text.Megaparsec.Char
 p04 :: IO ()
 p04 = do
   input <- sort <$> lines <$> slurp 104
-  let shiftEvents = rights $ map (runParser parseShiftEvent "") input
-  mapM_ print shiftEvents
+  let log = rights $ map (runParser parseShiftEvent "") input
+  print $ sumSleep log
+  print $ fmap length $ sumSleep log
 
 type LogEntry = (Timestamp, ShiftEvent)
 
@@ -38,7 +39,7 @@ sumSleep shifts =
 calcShift :: [LogEntry] -> [Int]
 calcShift [] = []
 calcShift (begin:end:es) =
-  let span = [(mi (fst begin))..(mi (fst end))]
+  let span = [(mi (fst begin))..(mi (fst end) - 1)]
   in span ++ (calcShift es)
 
 newShift (BeginShift _) = True
@@ -46,7 +47,7 @@ newShift _ = False
 
 ------------- parsers ------------------
 
-parseShiftEvent :: Parser (Timestamp, ShiftEvent)
+parseShiftEvent :: Parser LogEntry
 parseShiftEvent = do
   time <- parseTimestamp
   event <- choice [parseWakesUp,
