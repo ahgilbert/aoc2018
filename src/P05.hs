@@ -10,11 +10,19 @@ import Text.Megaparsec.Char
 
 p05 :: IO ()
 p05 = do
-  -- input <- slurp 5
-  let input = "dabAcCaCBAcCcaDA"
+  input <- slurp 5
   let polymer = fromRight [] $ (runParser parsePolymer "") input
-  let final = reduce polymer
-  print $ showPolymer final
+  let reductions = iterate reduce polymer
+  let final = showPolymer $ findFixed reductions
+  print $ length final
+
+findFixed :: [[a]] -> [a]
+findFixed [] = []
+findFixed (a:[]) = []
+findFixed (a:b:cs) =
+  if length a == length b
+  then a
+  else findFixed (b:cs)
 
 data Polarity = Up | Down
   deriving (Show, Eq)
