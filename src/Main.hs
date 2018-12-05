@@ -6,7 +6,8 @@ import P01
 import P02
 import P03
 import P04
+import P05
 
 main :: IO ()
 main = do
-  p04
+  p05
