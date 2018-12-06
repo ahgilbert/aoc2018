@@ -35,13 +35,6 @@ type Zipper a = ([a],[a])
 mkZipper :: [a] -> Zipper a
 mkZipper as = ([],as)
 
-zipDone (_,[]) = True
-zipDone _ = False
-
-zipStep :: Zipper a -> Zipper a
-zipStep (as,[]) = (as,[])
-zipStep (as,(b:bs)) = (b:as, bs)
-
 zipReduce :: [Atom] -> [Atom]
 zipReduce as =
   mkZipper as
