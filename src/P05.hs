@@ -13,11 +13,11 @@ p05 :: IO ()
 p05 = do
   input <- slurp 5
   let polymer = fromRight [] $ (runParser parsePolymer "") input
-  let reduced = showPolymer $ reduce polymer
+  let reduced = showPolymer $ zipReduce polymer
   print $ length reduced
   let allChars = nub $ map (toLower . c) polymer
   let allSeeds = map (\ch -> filter (not . (matches ch)) polymer) allChars
-  let allReductions = map (length . reduce) allSeeds
+  let allReductions = map (length . zipReduce) allSeeds
   let bestReduction = minimum allReductions
   print bestReduction
 
@@ -30,33 +30,37 @@ data Polarity = Up | Down
 data Atom = Atom { c :: Char, p :: Polarity }
   deriving (Show, Eq)
 
-reduce :: [Atom] -> [Atom]
-reduce polymer =
-  let reductions = iterate reduce' polymer
-  in findFixed reductions
+type Zipper a = ([a],[a])
 
-reduce' :: [Atom] -> [Atom]
-reduce' [] = []
-reduce' (a:[]) = [a]
-reduce' (a:b:cs) =
+mkZipper :: [a] -> Zipper a
+mkZipper as = ([],as)
+
+zipDone (_,[]) = True
+zipDone _ = False
+
+zipStep :: Zipper a -> Zipper a
+zipStep (as,[]) = (as,[])
+zipStep (as,(b:bs)) = (b:as, bs)
+
+zipReduce :: [Atom] -> [Atom]
+zipReduce as =
+  mkZipper as
+  |> reduceGo
+  |> fst
+  |> reverse
+
+reduceGo :: Zipper Atom -> Zipper Atom
+reduceGo ((a:as),(b:bs)) =
   if isCollision a b
-  then reduce' cs
-  else (a:(reduce' (b:cs)))
-
-findFixed :: [[a]] -> [a]
-findFixed [] = []
-findFixed (a:[]) = []
-findFixed (a:b:cs) =
-  if length a == length b
-  then a
-  else findFixed (b:cs)
+  then reduceGo (as,bs)
+  else reduceGo ((b:a:as),bs)
+reduceGo (as,[]) = (as,[])
+reduceGo ([],(a:bs)) = reduceGo ([a],bs)
 
 isCollision :: Atom -> Atom -> Bool
 isCollision a b = (toLower $ c a) == (toLower $ c b) && (p a) /= (p b)
 
-stripCollision :: [Atom] -> [Atom]
-stripCollision = undefined
-
+------------- parsers ---------------
 parseUp :: Parser Atom
 parseUp = do
   c <- upperChar
