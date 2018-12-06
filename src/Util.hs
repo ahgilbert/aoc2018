@@ -29,7 +29,7 @@ uniquePairs xs = [(a,b) | a <- xs, b <- xs, a < b]
 
 parsePosInt :: Parser Int
 parsePosInt = do
-  string "+"
+  optional $ string "+"
   digits <- many digitChar
   return $ read digits
 
@@ -41,3 +41,11 @@ parseNegInt = do
 
 parseInt :: Parser Int
 parseInt = choice [parseNegInt, parsePosInt]
+
+parsePoint :: Parser (Int, Int)
+parsePoint = do
+  x <- parseInt
+  char ','
+  space
+  y <- parseInt
+  return (x,y)

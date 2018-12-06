@@ -27,3 +27,4 @@ executable aoc2018
                , P03
                , P04
                , P05
+               , P06
