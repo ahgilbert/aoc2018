@@ -11,4 +11,4 @@ import P06
 
 main :: IO ()
 main = do
-  p06
+  p07
