@@ -17,17 +17,15 @@ p06 = do
   let points = rights $ map (runParser parsePoint "") input
       bottomLeft = (minimum (map fst points), minimum (map snd points))
       topRight = (maximum (map fst points), maximum (map snd points))
-      groups = map (getNearest points) (enclosedSpace bottomLeft topRight)
-      trimmed = groups
+      distancesToNearest = map (getNearest points) (enclosedSpace bottomLeft topRight)
+      voroni = distancesToNearest
                 |> filter isJust
                 |> map fromJust
                 |> sort
                 |> group
                 |> map (\xx -> (head xx, length xx))
-      winner = trimmed
+      winner = voroni
                |> maximumBy (\(_,a) (_,b) -> compare a b)
-  -- print groups
-  -- print trimmed
   print winner
 
 enclosedSpace (xBL,yBL) (xTR,yTR) = [(x,y) | x <- [xBL..xTR], y <- [yBL..yTR]]
