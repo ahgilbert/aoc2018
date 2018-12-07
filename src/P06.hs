@@ -17,7 +17,8 @@ p06 = do
   let points = rights $ map (runParser parsePoint "") input
       bottomLeft = (minimum (map fst points), minimum (map snd points))
       topRight = (maximum (map fst points), maximum (map snd points))
-      distancesToNearest = map (getNearest points) (enclosedSpace bottomLeft topRight)
+      bounds = enclosedSpace bottomLeft topRight
+  let distancesToNearest = map (getNearest points) bounds
       voroni = distancesToNearest
                 |> filter isJust
                 |> map fromJust
@@ -26,7 +27,9 @@ p06 = do
                 |> map (\xx -> (head xx, length xx))
       winner = voroni
                |> maximumBy (\(_,a) (_,b) -> compare a b)
-  print winner
+  putStrLn $ "Part 1: " <> show winner
+
+
 
 enclosedSpace (xBL,yBL) (xTR,yTR) = [(x,y) | x <- [xBL..xTR], y <- [yBL..yTR]]
 
