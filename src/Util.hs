@@ -9,6 +9,7 @@ import Text.Megaparsec
 import Text.Megaparsec.Char
 
 type Parser = Parsec Void String
+type Point = (Int, Int)
 
 (|>) :: a -> (a -> b) -> b
 (|>) = flip ($)
@@ -42,7 +43,7 @@ parseNegInt = do
 parseInt :: Parser Int
 parseInt = choice [parseNegInt, parsePosInt]
 
-parsePoint :: Parser (Int, Int)
+parsePoint :: Parser Point
 parsePoint = do
   x <- parseInt
   char ','
