@@ -11,6 +11,8 @@ import Text.Megaparsec
 import Text.Megaparsec.Char
 import Util
 
+grid = G.UnboundedSquareGrid
+
 p06 :: IO ()
 p06 = do
   input <- lines <$> slurp 6
@@ -20,22 +22,31 @@ p06 = do
       bounds = enclosedSpace bottomLeft topRight
   let distancesToNearest = map (getNearest points) bounds
       voroni = distancesToNearest
-                |> filter isJust
-                |> map fromJust
-                |> sort
-                |> group
-                |> map (\xx -> (head xx, length xx))
+               |> filter isJust
+               |> map fromJust
+               |> sort
+               |> group
+               |> map (\xx -> (head xx, length xx))
       winner = voroni
                |> maximumBy (\(_,a) (_,b) -> compare a b)
   putStrLn $ "Part 1: " <> show winner
+  let faith = map (sumOfDistances points) bounds
+      hope = faith
+             |> map (< 10000)
+             |> filter id
+             |> length
+  print hope
 
-
+sumOfDistances :: [Point] -> Point -> Int
+sumOfDistances targets origin =
+  map (\p -> G.distance grid origin p) targets
+  |> sum
 
 enclosedSpace (xBL,yBL) (xTR,yTR) = [(x,y) | x <- [xBL..xTR], y <- [yBL..yTR]]
 
 getNearest :: [Point] -> Point -> Maybe Point
 getNearest ps p =
-  let distances = map (\target -> (target, G.distance G.UnboundedSquareGrid p target)) ps
+  let distances = map (\target -> (target, G.distance grid p target)) ps
       dToNearest = distances
                    |> minimumBy (\(_,a) (_,b) -> compare a b)
                    |> snd
@@ -47,7 +58,7 @@ getNearest ps p =
 
 isBounded :: Point -> [Point] -> Bool
 isBounded p ps =
-  map (\p2 -> G.directionTo G.UnboundedSquareGrid p p2) ps
+  map (\p2 -> G.directionTo grid p p2) ps
   |> concat
   |> nub
   |> length
