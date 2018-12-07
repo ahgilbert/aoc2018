@@ -8,7 +8,9 @@ import P03
 import P04
 import P05
 import P06
+import P07
 
 main :: IO ()
 main = do
   p07
+
