@@ -12,6 +12,12 @@ import Text.Megaparsec.Char
 
 type SleighStep = (Char, Char)
 type SleighDict = M.Map Char [Char]
+data WorkState = WS {
+    time :: Int,
+    workers :: Int,
+    soFar :: [(Char, Int)],
+    remaining :: [Char]
+  } deriving (Show)
 
 p07 :: IO ()
 p07 = do
@@ -28,24 +34,40 @@ p07 = do
         |> filter ((== Just "") . snd)
         |> head
         |> fst
-  -- print $ M.lookup start backwardsMap
-      solution = walk backwardsMap allKeys start
-  print $ solution
+      part1 = walk (const 1) backwardsMap allKeys start
+  print $ fst part1
 
-walk :: SleighDict -> [Char] -> Char -> [Char]
-walk g allKeys start =
-  step g ([start], (allKeys \\ [start]))
-  |> fst
-  |> reverse
+walk :: (Char -> Int) -> SleighDict -> [Char] -> Char -> (String, Int)
+walk coster g allKeys start =
+  step
+    coster
+    g
+    WS { time = 1, workers = 1, soFar = [(start, coster start)], remaining = (allKeys \\ [start]) }
+  |> (\ws -> (reverse $ map fst (soFar ws), time ws))
 
-step :: SleighDict -> ([Char], [Char]) -> ([Char], [Char])
-step _ retVal@(_, []) = retVal
-step g (soFar, remaining) =
-  let next = remaining
-             |> filter (\r -> all ((flip elem) soFar) (fromJust $ M.lookup r g)) -- only those whose precursers are all in soFar
-             |> sort
-             |> head
-  in step g (next:soFar, remaining \\ [next])
+step :: (Char -> Int) -> SleighDict -> WorkState -> WorkState
+step coster g workState =
+  if null $ remaining workState
+  then workState
+  else
+    let ready = soFar workState
+                |> filter (\(c,t) -> t <= (time workState))
+                |> map fst
+        nexts = remaining workState
+                |> filter (\r -> all ((flip elem) ready) (fromJust $ M.lookup r g)) -- only those whose precursers are all in soFar
+                |> sort
+                |> take (workers workState)
+                |> reverse
+                |> map (\k -> (k, (time workState) + (coster k)))
+        tick = nexts
+               |> map snd
+               |> minimum
+    in step coster g (WS {
+                             time = tick,
+                             workers = ((workers workState) - length nexts + 1),
+                             soFar = (nexts ++ (soFar workState)),
+                             remaining = (remaining workState) \\ (map fst nexts)
+                           })
 
 ------------ parsers --------------
 parseSleighStep :: Parser SleighStep
