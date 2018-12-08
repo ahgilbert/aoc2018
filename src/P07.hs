@@ -3,54 +3,49 @@
 module P07 where
 
 import Util
-import Data.Array
 import Data.Either
 import Data.List
+import qualified Data.Map.Strict as M
 import Data.Maybe
-import qualified Data.Graph as G
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
 type SleighStep = (Char, Char)
+type SleighDict = M.Map Char [Char]
 
 p07 :: IO ()
 p07 = do
-  input <- lines <$> slurp 107
+  input <- lines <$> slurp 7
   let dependencies = rights $ map (runParser parseSleighStep "") input
-      (graph, allKeys, fromVertex, getSuccessors) = mkGraph dependencies
-      indegrees = G.indegree graph
-      start = allKeys \\ (map snd dependencies) |> head
-      ordering = nextStep getSuccessors ([],"C")
-  print ordering
-
-mkGraph :: [SleighStep] -> (G.Graph, [Char], (G.Vertex -> (Char, Char, [Char])), (Char -> [Char]))
-mkGraph steps =
-  let allKeys = map fst steps ++ map snd steps |> nub |> sort
-      graphSeed = allKeys
-                  |> map (\k -> (k,k,(filter (\(f,_) -> f == k) steps |> map snd)))
-      (graph, fromVertex, fromKey) =
+      allKeys = map fst dependencies ++ map snd dependencies |> sort |> nub
+      backwardsMap = -- given a key, what steps must happen first?
         allKeys
-        |> map (\k -> (k, k, (filter (\(f,_) -> f == k) steps |> map snd)))
-        |> G.graphFromEdges
-      getSuccessors k =
-        fromKey k
-        |> fmap fromVertex
-        |> fmap (\(_,_,v) -> v)
-        |> fromJust
-  in (graph, allKeys, fromVertex, getSuccessors)
+        |> map (\k -> (k, map fst $ filter ((== k) . snd) dependencies))
+        |> M.fromList
+      start =
+        allKeys
+        |> map (\k -> (k, M.lookup k backwardsMap))
+        |> filter ((== Just "") . snd)
+        |> head
+        |> fst
+  -- print $ M.lookup start backwardsMap
+      solution = walk backwardsMap allKeys start
+  print $ solution
 
-walk :: (Char -> [Char]) -> Char -> [Char]
-walk stepper start =
-  nextStep stepper ([],[start])
+walk :: SleighDict -> [Char] -> Char -> [Char]
+walk g allKeys start =
+  step g ([start], (allKeys \\ [start]))
   |> fst
   |> reverse
 
-nextStep :: (Char -> [Char]) -> ([Char],[Char]) -> ([Char],[Char])
-nextStep _ (soFar, []) = (soFar, [])
-nextStep stepper (soFar, candidates) =
-  let here = head candidates
-      cand' = nub $ sort ((stepper here) ++ (tail candidates))
-  in nextStep stepper ((here:soFar), cand')
+step :: SleighDict -> ([Char], [Char]) -> ([Char], [Char])
+step _ retVal@(_, []) = retVal
+step g (soFar, remaining) =
+  let next = remaining
+             |> filter (\r -> all ((flip elem) soFar) (fromJust $ M.lookup r g)) -- only those whose precursers are all in soFar
+             |> sort
+             |> head
+  in step g (next:soFar, remaining \\ [next])
 
 ------------ parsers --------------
 parseSleighStep :: Parser SleighStep
