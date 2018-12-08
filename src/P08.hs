@@ -15,12 +15,10 @@ readInt = read
 
 p08 :: IO ()
 p08 = do
-  input <- map readInt <$> words <$> slurp 108
-  -- let license = fromRight [] $ (runParser parseMemory "") input
+  input <- map readInt <$> words <$> slurp 8
   let (tree, rest) = buildTree input
-  print rest
-  print $ sum $ concat $ flatten tree
-  print $ scoreTree tree
+  putStrLn $ "Part 1: " <> (show $ sum $ concat $ flatten tree)
+  putStrLn $ "Part 2: " <> (show $ scoreTree tree)
 
 buildTree :: [Int] -> (Memory, [Int])
 buildTree (nKids:nMeta:rest) =
@@ -32,12 +30,11 @@ buildForest :: Int -> ([Memory], [Int]) -> ([Memory], [Int])
 buildForest 0 rest = rest
 buildForest n (kids, rest) =
   let (child, rest') = buildTree rest
-  in buildForest (n - 1) ((child:kids), rest')
+  in buildForest (n - 1) ((kids ++ [child]), rest')
 
-scoreTree :: Memory -> [Int]
 scoreTree t =
   if (null (subForest t))
-  then ((rootLabel t))
+  then ((rootLabel t)) |> sum
   else
     let kids = subForest t
         idxes = rootLabel t
@@ -45,7 +42,7 @@ scoreTree t =
                 |> map (\i -> i - 1)
         candidateKids = map (kids !!) idxes
         scores = map scoreTree candidateKids
-    in concat scores
+    in sum $ map scoreTree (candidateKids)
 
 ----------- parsers -------------
 
