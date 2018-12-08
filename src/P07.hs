@@ -21,7 +21,7 @@ data WorkState = WS {
 
 p07 :: IO ()
 p07 = do
-  input <- lines <$> slurp 7
+  input <- lines <$> slurp 107
   let dependencies = rights $ map (runParser parseSleighStep "") input
       allKeys = map fst dependencies ++ map snd dependencies |> sort |> nub
       backwardsMap = -- given a key, what steps must happen first?
@@ -34,40 +34,51 @@ p07 = do
         |> filter ((== Just "") . snd)
         |> head
         |> fst
-      part1 = walk (const 1) backwardsMap allKeys start
-  print $ fst part1
+      part1 = walk (const 1) backwardsMap 1 allKeys start
+      part2 = walk coster2 backwardsMap 2 allKeys start
+  mapM_ print part1
+  putStrLn ""
+  mapM_ print part2
 
-walk :: (Char -> Int) -> SleighDict -> [Char] -> Char -> (String, Int)
-walk coster g allKeys start =
-  step
-    coster
-    g
-    WS { time = 1, workers = 1, soFar = [(start, coster start)], remaining = (allKeys \\ [start]) }
-  |> (\ws -> (reverse $ map fst (soFar ws), time ws))
+coster2 :: Char -> Int
+coster2 =
+  let m = zip "ABCDEFGHIJKLMNOPQRSTUVWXYZ" [1..]
+          |> M.fromList
+  in (\c -> M.lookup c m |> fromJust)
+
+-- walk :: (Char -> Int) -> SleighDict -> Int -> [Char] -> Char -> (String, Int)
+walk coster g numWorkers allKeys start =
+  iterate (step coster g)
+          WS { time = 1, workers = numWorkers, soFar = [(start, coster start)], remaining = (allKeys \\ [start]) }
+  |> takeWhile (\ws -> not . null $ remaining ws)
 
 step :: (Char -> Int) -> SleighDict -> WorkState -> WorkState
 step coster g workState =
   if null $ remaining workState
   then workState
   else
-    let ready = soFar workState
-                |> filter (\(c,t) -> t <= (time workState))
-                |> map fst
+    let (ready, pending) = soFar workState
+                           |> partition (\(_,t) -> t <= (time workState))
+                           |> (\(r,p) -> (map fst r, p))
         nexts = remaining workState
                 |> filter (\r -> all ((flip elem) ready) (fromJust $ M.lookup r g)) -- only those whose precursers are all in soFar
                 |> sort
-                |> take (workers workState)
+                |> take ((workers workState) - length pending)
                 |> reverse
                 |> map (\k -> (k, (time workState) + (coster k)))
-        tick = nexts
-               |> map snd
-               |> minimum
-    in step coster g (WS {
-                             time = tick,
-                             workers = ((workers workState) - length nexts + 1),
-                             soFar = (nexts ++ (soFar workState)),
-                             remaining = (remaining workState) \\ (map fst nexts)
-                           })
+        tick = if null nexts
+               then pending
+                    |> map snd
+                    |> minimum
+               else nexts
+                    |> map snd
+                    |> minimum
+    in WS {
+            time = tick,
+            workers = workers workState,
+            soFar = (nexts ++ (soFar workState)),
+            remaining = (remaining workState) \\ (map fst nexts)
+          }
 
 ------------ parsers --------------
 parseSleighStep :: Parser SleighStep
