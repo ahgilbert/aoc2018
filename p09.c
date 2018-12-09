@@ -2,25 +2,25 @@
 #include <stdio.h>
 
 struct Node {
-    int marble;
+    long marble;
     struct Node *next;
     struct Node *prev;
 };
 
-struct Node* mkNode(int v) {
+struct Node* mkNode(long v) {
     struct Node *newNode = (struct Node*)malloc(sizeof(struct Node));
     newNode->marble = v;
     return newNode;
 }
 
-struct Node* mkRing(int v) {
+struct Node* mkRing(long v) {
     struct Node *current = mkNode(v);
     current->next = current;
     current->prev = current;
     return current;
 }
 
-struct Node* insert(struct Node* current, int v) {
+struct Node* insert(struct Node* current, long v) {
     // insert v clockwise of current
     struct Node *newNode = mkNode(v);
     newNode->next = current->next;
@@ -37,23 +37,23 @@ struct Node* removeMarble(struct Node* current) {
     return current->next;
 }
 
-struct Node *moveCounterClockwise(struct Node *current, int steps) {
-    for(int i = 0; i < steps; i++) {
+struct Node *moveCounterClockwise(struct Node *current, long steps) {
+    for(long i = 0; i < steps; i++) {
         current = current->prev;
     }
     return current;
 }
 
-struct Node *moveClockwise(struct Node *current, int steps) {
-    for(int i = 0; i < steps; i++) {
+struct Node *moveClockwise(struct Node *current, long steps) {
+    for(long i = 0; i < steps; i++) {
         current = current->next;
     }
     return current;
 }
 
-int* initScores(int n) {
-    int *scores = (int*)malloc(sizeof(int) * n);
-    for(int i=0; i<n; i++) {
+long* initScores(long n) {
+    long *scores = (long*)malloc(sizeof(long) * n);
+    for(long i=0; i<n; i++) {
         scores[i] = 0;
     }
     return scores;
@@ -61,17 +61,17 @@ int* initScores(int n) {
 
 void walkArray(struct Node* current) {
     struct Node *here = current->next;
-    printf("(%d) ", current->marble);
+    printf("(%ld) ", current->marble);
     while(here != current) {
-        printf("%d ", here->marble);
+        printf("%ld ", here->marble);
         here = here->next;
     }
     printf("\n");
 }
 
-int arrayMax(int *arr, int n) {
-    int winner = 0;
-    for(int i=0; i<n; i++) {
+long arrayMax(long *arr, long n) {
+    long winner = 0;
+    for(long i=0; i<n; i++) {
         if(arr[i] > winner) {
             winner = arr[i];
         }
@@ -80,16 +80,16 @@ int arrayMax(int *arr, int n) {
 }
 
 int main(int argc, char *argv[]){
-    int numPlayers = atoi(argv[1]);
-    int numMarbles = atoi(argv[2]);
-    int *scores = initScores(numPlayers);
+    long numPlayers = atoi(argv[1]);
+    long numMarbles = atoi(argv[2]);
+    long *scores = initScores(numPlayers);
     struct Node *current = mkRing(0);
-    for(int m=1; m < numMarbles; m++) {
+    for(long m=1; m < numMarbles; m++) {
         // walkArray(current);
         if(m % 23 == 0) {
             // add scores to current player
             current = moveCounterClockwise(current, 7);
-            int points = m + current->marble;
+            long points = m + current->marble;
             current = removeMarble(current);
             scores[m % numPlayers] += points;
         } else {
@@ -98,6 +98,6 @@ int main(int argc, char *argv[]){
         }
     }
 
-    printf("high score: %d", arrayMax(scores, numPlayers));
+    printf("high score: %ld", arrayMax(scores, numPlayers));
     return 0;
 }
