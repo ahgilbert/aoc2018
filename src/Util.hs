@@ -2,7 +2,9 @@
 
 module Util where
 
+import Control.Monad
 import Data.String
+import Data.Either
 import Data.Void
 import Text.Printf
 import Text.Megaparsec
@@ -18,6 +20,10 @@ infixl 0 |>
 (||>) :: Functor f => f a -> (a -> b) -> f b
 (||>) = flip (<$>)
 infixl 4 ||>
+
+slurpLinesWith :: Parser a -> Int -> IO [a]
+slurpLinesWith parser i =
+  rights . map (runParser parser "") . lines <$> readFile (printf "inputs/%02d.txt" i)
 
 slurp :: IsString a => Int -> IO a
 slurp i = do

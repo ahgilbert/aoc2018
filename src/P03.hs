@@ -12,8 +12,7 @@ data Patch = Patch { ident :: Int, corner :: (Int, Int), size :: (Int, Int) }
   deriving (Show)
 
 p03 = do
-  input <- slurp 3 ||> lines
-  let patches = rights $ map (runParser parsePatch "") input
+  patches <- slurpLinesWith parsePatch 3
   let claims = map getPoints patches
   let arr = accumArray (+) 0 ((0,0),(1000,1000)) (zip (concat (map snd claims)) (repeat 1))
   let overlap = elems arr |> filter (> 1) |> length
