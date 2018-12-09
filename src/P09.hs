@@ -1,14 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module xxx where
+module P09 where
 
 import Util
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
-xxx :: IO ()
-xxx = do
-  faith <- slurpLinesWith parseFaith xxx
+p09 :: IO ()
+p09 = do
+  faith <- slurpLinesWith parseFaith 9
   print "write some code"
 
 
