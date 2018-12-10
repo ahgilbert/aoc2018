@@ -6,13 +6,11 @@ import Util
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
+numPlayersReal = 452
+numMarblesReal = 71250
+
 p09 :: IO ()
 p09 = do
-  faith <- slurpLinesWith parseFaith 9
-  print "write some code"
+  print "This is beyond my haskelling. See p09.c"
 
 
------------- parsers ---------------
-parseFaith :: Parser String
-parseFaith = do
-  many anyChar
