@@ -14,7 +14,7 @@ p10 :: IO ()
 p10 = do
   stars <- slurpLinesWith parseSkylight 10
   let idx = idxOfFirstIncrease $ map (boundarySize . (boundaryAt stars)) [0..]
-  mapM_ print $ printStars idx stars
+  mapM_ putStrLn $ printStars idx stars
   print idx
 
 idxOfFirstIncrease :: [Int] -> Int
@@ -52,7 +52,7 @@ printStars t stars =
       starLocs = map (starAt t) stars
       bounds@((xmin,ymin),(xmax,ymax)) = boundary starLocs
       arrSeed = zip starLocs $ repeat '#'
-      arr = A.accumArray (flip const) '.' bounds arrSeed
+      arr = A.accumArray (flip const) ' ' bounds arrSeed
       rows =
         map (\y ->
                 let row = [(x,y) | x <- xs]
