@@ -12,9 +12,27 @@ data Star = Star { pos :: Point, vel :: Point }
 
 p10 :: IO ()
 p10 = do
-  stars <- slurpLinesWith parseSkylight 1010
-  let scene = map (flip printStars $ stars) [0..]
-  mapM_ putStrLn $ scene !! 3
+  stars <- slurpLinesWith parseSkylight 10
+  let idx = idxOfFirstIncrease $ map (boundarySize . (boundaryAt stars)) [0..]
+  mapM_ print $ printStars idx stars
+  print idx
+
+idxOfFirstIncrease :: [Int] -> Int
+idxOfFirstIncrease [] = 0
+idxOfFirstIncrease as =
+  zip as (tail as)
+  |> map (\(a,b) -> a - b)
+  |> takeWhile (> 0)
+  |> length
+
+boundarySize :: (Point, Point) -> Int
+boundarySize ((xmin,ymin),(xmax,ymax)) =
+  (xmax - xmin) * (ymax - ymin)
+
+boundaryAt :: [Star] -> Int -> (Point, Point)
+boundaryAt stars t =
+  starsAt stars t
+  |> boundary
 
 boundary :: [Point] -> (Point, Point)
 boundary ps =
@@ -46,6 +64,9 @@ chunks :: Int -> [a] -> [[a]]
 chunks _ [] = []
 chunks n as =
   take n as : (chunks n $ drop n as)
+
+starsAt :: [Star] -> Int -> [Point]
+starsAt stars t = map (starAt t) stars
 
 starAt :: Int -> Star -> Point
 starAt t star =
