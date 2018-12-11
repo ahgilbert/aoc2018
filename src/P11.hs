@@ -23,6 +23,7 @@ sndMax :: Ord b => [(a,b)] -> (a,b)
 sndMax ls = maximumBy (\a b -> compare (snd a) (snd b)) ls
 
 getEdge :: Point -> Int -> S.Set Point
+getEdge _ 0 = S.empty
 getEdge (tlx,tly) size =
   let s = size - 1
       rightEdge = S.fromList [(tlx + s,y) | y <- [tly..tly + s]]
@@ -30,13 +31,15 @@ getEdge (tlx,tly) size =
       corner = S.singleton (tlx + s, tly + s)
   in foldl S.union S.empty [rightEdge, bottomEdge, corner]
 
-{-
-regionPowers :: Int -> [Int] -> Point -> [(Int, Int)]
-regionPowers serial sizes corner =
-  let folder = (\soFar points -> soFar + (regionPower serial points))
-  in foldl folder (map (getEdge corner) sizes)
-     |> sndMax
--}
+-- Given a max size and a corner, give (size, score) pairs for regions anchored to corner
+regionPowers :: Int -> Int -> Point -> [(Int, Int)]
+regionPowers serial maxSize corner =
+  let edges = map (getEdge corner) [1..maxSize]
+      powerDeltas = map (regionPower serial) edges
+                    |> scanl (+) 0
+                    |> tail
+                    |> zip [1..]
+  in powerDeltas
 
 regionPower :: Int -> S.Set Point -> Int
 regionPower serial points =
