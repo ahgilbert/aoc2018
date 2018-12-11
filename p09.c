@@ -34,7 +34,9 @@ struct Node* removeMarble(struct Node* current) {
     current->prev->next = current->next;
     current->next->prev = current->prev;
     // printf("removing %d, new current is %d\n", current->marble, current->next->marble);
-    return current->next;
+    struct Node *retVal = current->next;
+    free(current);
+    return retVal;
 }
 
 struct Node *moveCounterClockwise(struct Node *current, long steps) {
