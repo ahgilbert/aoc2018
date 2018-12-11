@@ -12,8 +12,9 @@ import P07
 import P08
 import P09
 import P10
+import P11
 
 main :: IO ()
 main = do
-  p10
+  p11
 

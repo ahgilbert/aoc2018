@@ -33,3 +33,4 @@ executable aoc2018
                , P08
                , P09
                , P10
+               , P11
