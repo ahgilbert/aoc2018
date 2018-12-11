@@ -30,5 +30,5 @@ powerLevel serial (x,y) =
 
 hundreds :: Int -> Int -- return hundreds digit
 hundreds n =
-  ((n `mod` 1000) - (n `mod` 100)) `div` 100
+  (n `mod` 1000) `div` 100
 
