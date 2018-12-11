@@ -1,1 +1,1 @@
-stack exec aoc2018
+stack exec aoc2018 $@
