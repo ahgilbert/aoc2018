@@ -10,12 +10,18 @@ import System.Environment
 p11 :: IO ()
 p11 = do
   serial <- getArgs ||> head ||> read
+  let p1 = p11_1 serial
+  print $ "p1: " <> (show p1)
+
+p11_1 :: Int -> Point
+p11_1 serial =
   let candidates = getCandidates 3
-      faith = serial + 0
-      -- levels = map (\p -> (p, regionPowers serial [1..3] p)) candidates
-      -- p1 = sndMax levels
-  -- putStrLn $ "p1: " <> show p1
-  putStrLn "in progress"
+      sq3s = candidates
+             |> map (\p -> (p, regionPowers serial 3 p)) -- [(size, score)]
+             |> (map . fmap) (\rs -> snd $ rs !! 2)
+      p1 = sndMax sq3s
+           |> fst
+  in p1
 
 getCandidates i = [(x,y) | x <- [1..300 - (i - 1)], y <- [1..300 - (i - 1)]]
 
@@ -35,11 +41,11 @@ getEdge (tlx,tly) size =
 regionPowers :: Int -> Int -> Point -> [(Int, Int)]
 regionPowers serial maxSize corner =
   let edges = map (getEdge corner) [1..maxSize]
-      powerDeltas = map (regionPower serial) edges
-                    |> scanl (+) 0
-                    |> tail
-                    |> zip [1..]
-  in powerDeltas
+      powerSums = map (regionPower serial) edges
+                  |> scanl (+) 0
+                  |> tail
+                  |> zip [1..]
+  in powerSums
 
 regionPower :: Int -> S.Set Point -> Int
 regionPower serial points =
