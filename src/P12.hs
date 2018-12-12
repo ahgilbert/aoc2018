@@ -21,7 +21,8 @@ p12 = do
   let (rules, cavern) = fromRight (M.empty,M.empty) $ runParser parseCavern "" input
       evol = iterate (generation rules) cavern
   print $ scoreCavern (evol !! 20)
-  mapM_ print $ take 50 (map (\i -> (i, scoreCavern (evol !! i))) [100,200..])
+  mapM_ print $ take 30 (map (\i -> (i, scoreCavern (evol !! i))) [100,200..])
+  -- in the long run, growth is linear. derive formula by hand
 
 scoreCavern :: Cavern -> Int
 scoreCavern c =
