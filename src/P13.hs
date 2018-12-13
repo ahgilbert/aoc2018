@@ -3,6 +3,7 @@
 module P13 where
 
 import Util
+import Data.List
 import Data.Maybe
 
 data Turn = Louie | Onward | Righty
@@ -17,8 +18,14 @@ instance Show Cart where
 
 p13 :: IO ()
 p13 = do
-  input <- map (map readGrid) <$> lines <$> slurp 13
-  mapM_ print input
+  input <- map (map readGrid) <$> lines <$> slurp 1013
+  let tracks = map (map fst) input
+      carts = zip [0..] input
+              |> map (\(row, cols) -> zip [(col,row) | col <- [0..]] cols)
+              |> concat
+              |> filter (\(_,(_,cart)) -> isJust cart)
+              |> map (\(coord,(_,cart)) -> (fromJust cart) { loc = coord })
+  mapM_ print carts
 
 readGrid :: Char -> (Track, Maybe Cart)
 readGrid '-' = (Straight E, Nothing)
