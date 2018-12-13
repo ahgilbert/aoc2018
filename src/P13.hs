@@ -15,10 +15,10 @@ data Direction = N | S | E | W
 data TrackSegment = Straight | Intersection | Bend | BackBend | Empty
   deriving (Show, Eq)
 type Track = A.Array Point TrackSegment
-data Cart = Cart { loc :: Point, dir :: Direction, turns :: [Turn] }
+data Cart = Cart { loc :: Point, dir :: Direction, turns :: [Turn], debug :: String }
   deriving (Eq)
 instance Show Cart where
-  show c = (show $ loc c) <> " " <> (show $ dir c) <> " " <> (show $ head $ turns c)
+  show c = (show $ loc c) <> " " <> (show $ dir c) <> " " <> (show $ head $ turns c) <> " " <> (debug c)
 
 p13 :: IO ()
 p13 = do
@@ -34,11 +34,16 @@ p13 = do
               |> concat
               |> filter (\(_,(_,cart)) -> isJust cart)
               |> map (\(coord,(_,cart)) -> (fromJust cart) { loc = coord })
-      faith = iterate (step track) carts
+      faith = iterate (step track) (sortCarts carts)
       crash = dropWhile (not . hasCrash) faith
               |> head
               |> detectCrash
-  print crash
+      -- finalCart = takeWhile (\cs -> length cs > 1) $ dropWhile (\cs -> length cs > 3) faith
+      finalCart = dropWhile (\cs -> length cs > 1) faith |> take 1
+  -- print $ head crash
+  -- wrong guess: 101,62
+  -- mapM_ print $ take 5 faith
+  print finalCart
 
 hasCrash :: [Cart] -> Bool
 hasCrash cs = detectCrash cs |> length |> (> 0)
@@ -54,20 +59,31 @@ detectCrash carts =
 
 step :: Track -> [Cart] -> [Cart]
 step track carts =
-  map go carts
+  go (carts, [])
+  |> snd
   where
-    go c =
+    go ([],moved) = ([], sortCarts moved)
+    go ((c:unmoved), moved) = -- step this cart, checking for collisions
       let next = move (loc c) (dir c)
           section = track ! next
-          newDir = case section of
-                     Bend -> Louie
-                     BackBend -> Righty
-                     Intersection -> head (turns c)
-                     Straight -> Onward
-                     Empty -> undefined
-                   |> turn (dir c)
+          newDir = turn' c section
           turns' = if (section == Intersection) then tail (turns c) else turns c
-      in c { loc = next, dir = newDir, turns = turns' }
+          crash = elem next (map loc (unmoved ++ moved))
+          clear = (\p c -> p /= loc c)
+          c' = c { loc = next, dir = newDir, turns = turns', debug = (show $ ()) }
+      in if crash
+         then go (filter (clear next) unmoved, filter (clear next) moved)
+         else go (unmoved, c':moved)
+
+turn' :: Cart -> TrackSegment -> Direction
+turn' c segment =
+  case segment of
+    Bend -> if (elem (dir c) [N,S]) then Righty else Louie
+    BackBend -> if (elem (dir c) [N,S]) then Louie else Righty
+    Intersection -> head (turns c)
+    Straight -> Onward
+    Empty -> undefined
+  |> turn (dir c)
 
 move (x,y) N = (x,y - 1)
 move (x,y) S = (x,y + 1)
@@ -108,4 +124,4 @@ readGrid '\\' = (BackBend, Nothing)
 readGrid ' ' = (Empty, Nothing)
 readGrid _ = undefined
 
-newCart d = Cart { loc = (0,0), dir = d, turns = cycle [Louie, Onward, Righty] }
+newCart d = Cart { loc = (0,0), dir = d, turns = cycle [Louie, Onward, Righty], debug = "" }
