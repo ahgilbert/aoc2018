@@ -8,9 +8,8 @@ import Text.Megaparsec.Char
 
 xxx :: IO ()
 xxx = do
-  faith <- slurpLinesWith parseFaith xxx
-  print "write some code"
-
+  input <- slurpLinesWith parseFaith xxx
+  mapM_ putStrLn input
 
 ------------ parsers ---------------
 parseFaith :: Parser String
