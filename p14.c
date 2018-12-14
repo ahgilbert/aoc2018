@@ -67,11 +67,11 @@ int main(int argc, char *argv[]){
     long stop = atoi(argv[1]);
     struct Node *origin = mkRing(3);
     insert(origin, 7);
-    struct Node** elves[2] = {&origin,&origin->next};
+    struct Node* elves[2] = {origin,(origin->next)};
 
     for(long m=1; m < stop + 10; m++) {
-        for(int n=0; n < 2; n++) {
-            printf("elf %d: %d", n+1, *elves[n]->val);
+        for(long n=0; n < 2; n++) {
+            printf("elf %ld: %ld\n", n+1, elves[n]->val);
         }
     }
     return 0;
