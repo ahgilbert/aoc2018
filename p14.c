@@ -56,6 +56,8 @@ struct Node *moveClockwise(struct Node *current, long steps) {
 void walkArray(struct Node* current, struct Node* one, struct Node* two) {
     struct Node *here = current;
     do {
+        printf("%ld", here->val);
+        /*
         if(here == one) {
             printf("(%ld) ", here->val);
         } else if(here == two) {
@@ -63,6 +65,7 @@ void walkArray(struct Node* current, struct Node* one, struct Node* two) {
         } else {
             printf(" %ld  ", here->val);
         }
+        */
         here = here->next;
     } while(here != current);
     printf("\n");
@@ -103,10 +106,11 @@ void part1(struct Node *origin, int skip) {
 }
 
 int matchGo(struct Node *origin){
+    int target[] = {1,6,0,7,4,1}; int d = 6; // from reddit --- input 147061 expect 20283721
     // int target[] = {1,0,5,4,7,0}; int d = 6; // {0,7,4,5,0,1};
     // int target[] = {9,8,5,1,5}; int d = 5; // expect 9
     // int target[] = {5,4,2,1,0}; int d = 5; // expect 5
-    int target[] = {0,1,5,2,9}; int d = 5; // expect 18
+    // int target[] = {0,1,5,2,9}; int d = 5; // expect 18
     // int target[] = {4,1,4,9,5}; int d = 5; // expect 2018
     // int target[] = {9};
     struct Node *current = origin;
@@ -117,10 +121,11 @@ int matchGo(struct Node *origin){
         }
         current = current->prev;
     }
-    return 1;
+    return d;
 }
 
 int match(struct Node *origin){
+    // TODO report how many cells to step back to get to the beginning of the match
     if(matchGo(origin->prev)) {
         return 1;
     }
@@ -129,19 +134,19 @@ int match(struct Node *origin){
 }
 
 int main(int argc, char *argv[]){
-    // input: 074501
-    long stop = atoi(argv[1]);
+    long stop = 074501;
     struct Node *origin = mkRing(3);
     insert(origin, 7);
     int numElves = 2;
     struct Node* elves[2] = {origin,(origin->next)};
 
     int m = 0;
+    int nDig = 0;
     while(!match(origin)) {
         long score = scoreRecipes(elves, 2);
 
         // break score into its digits
-        int nDig = numDigits(score);
+        nDig = numDigits(score);
         long nn = score;
         int digs[nDig];
         for(int i = 1; i <= nDig; i++){
@@ -156,12 +161,16 @@ int main(int argc, char *argv[]){
         for(int i = 0; i < numElves; i++) {
             elves[i] = elfStep(elves[i]);
         }
-        printf("%d:\t", m);
-        walkArray(origin, elves[0], elves[1]);
-        m++;
+        // printf("%d:\t", m);
+        // walkArray(origin, elves[0], elves[1]);
+        m += nDig;
     }
+    m -= nDig;
 
-    printf("part 2: %d", m - 1);
+    // walkArray(origin, 0, 0);
+    // 20288092 is too high
+    // todo: calculate the sequence length between start and (start of match)
+    printf("part 2: %d", m - 3);
 
     return 0;
 }
