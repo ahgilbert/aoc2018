@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, GeneralizedNewtypeDeriving #-}
 
 module P15 where
 
@@ -9,6 +9,10 @@ import qualified Data.Array.Unboxed as A
 import qualified Data.Map.Strict as M
 
 type RogueMap = A.Array Point Char
+newtype BPoint = BPoint Point
+  deriving (Eq, Show)
+instance Ord BPoint where
+  compare = readingCompare
 
 p15 :: IO ()
 p15 = do
@@ -44,7 +48,7 @@ getFirstStep :: RogueMap -> Point -> Point -> Point
 getFirstStep rm start end =
   undefined
   |> map head
-  |> readingOrder
+  |> sort
   |> head
 
 printRogueMap :: RogueMap -> IO ()
@@ -55,14 +59,11 @@ showRogueMap rm =
         rows = map (\y -> [(x,y) | x <- [xmin..xmax]]) [ymin..ymax]
     in map (map (\k -> rm A.! k)) rows
 
-readingOrder :: [Point] -> [Point]
-readingOrder ps =
-  let comp (xa,ya) (xb,yb) =
-        if (compare ya yb) == EQ
-        then (compare xa xb)
-        else (compare ya yb)
-  in sortBy comp ps
-
+readingCompare :: BPoint -> BPoint -> Ordering
+readingCompare (BPoint (xa,ya)) (BPoint (xb,yb)) =
+  if (compare ya yb) == EQ
+  then (compare xa xb)
+  else (compare ya yb)
 ----------- parsers ---------------
 
 parseRogue :: [String] -> RogueMap
