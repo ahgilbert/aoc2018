@@ -16,12 +16,20 @@ p16 :: IO ()
 p16 = do
   input <- slurp 16
   let samples = fromRight [] $ runParser parseSamples "" input
-  print $ length samples
+      results = map testSample samples
+                |> filter (\os -> length os >= 3)
+  print $ length results
+
+testSample s =
+  map (\i -> i (before s) (instruction s)) instructions
+  |> zip [0,1..]
+  |> filter (\(_,o) -> o == (after s))
 
 splice :: [Int] -> Int -> Int -> [Int]
 splice regs reg val =
   (take reg regs) ++ [val] ++ (drop (reg + 1) regs)
 
+-------------- instructions -------------------
 instructions = [addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr]
 
 addr regs (_,a,b,c) = (regs !! a) + (regs !! b) |> splice regs c
