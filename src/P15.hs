@@ -12,9 +12,19 @@ p15 :: IO ()
 p15 = do
   input <- lines <$> slurp 1015
   let raw = parseRogue input
+      cave = fmap (\c -> if c == 'G' || c == 'E' then '.' else c) raw
   printRogueMap raw
   putStrLn ""
   mapM_ putStrLn input
+
+------- problem logic ----------
+
+
+
+----------- utils --------------
+
+getPath :: RogueMap -> Point -> Point -> [Point]
+getPath rm start end = undefined
 
 printRogueMap :: RogueMap -> IO ()
 printRogueMap = (mapM_ putStrLn) . showRogueMap
@@ -24,16 +34,8 @@ showRogueMap rm =
         rows = map (\y -> [(x,y) | x <- [xmin..xmax]]) [ymin..ymax]
     in map (map (\k -> rm A.! k)) rows
 
-north = (0,-1)
-west  = (-1,0)
-east  = (1, 0)
-south = (0, 1)
-
-neighbors4 :: Point -> [Point] -- get NWES
-neighbors4 p = map (addPoints p) [north, west, east, south]
-
-sortReadingOrder :: [Point] -> [Point]
-sortReadingOrder ps =
+readingOrder :: [Point] -> [Point]
+readingOrder ps =
   let comp (xa,ya) (xb,yb) =
         if (compare ya yb) == EQ
         then (compare xa xb)

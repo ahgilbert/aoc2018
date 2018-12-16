@@ -49,6 +49,14 @@ parseNegInt = do
 parseInt :: Parser Int
 parseInt = choice [parseNegInt, parsePosInt]
 
+north = (0,-1)
+west  = (-1,0)
+east  = (1, 0)
+south = (0, 1)
+
+neighbors4 :: Point -> [Point] -- get NWES
+neighbors4 p = map (addPoints p) [north, west, east, south]
+
 addPoints :: Point -> Point -> Point
 addPoints (x1,y1) (x2,y2) = (x1 + x2, y1 + y2)
 
