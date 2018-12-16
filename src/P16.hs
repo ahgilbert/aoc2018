@@ -22,43 +22,29 @@ splice :: [Int] -> Int -> Int -> [Int]
 splice regs reg val =
   (take reg regs) ++ [val] ++ (drop (reg + 1) regs)
 
-addr :: [Int] -> (Int, Int, Int, Int) -> [Int]
+instructions = [addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr]
+
 addr regs (_,a,b,c) = (regs !! a) + (regs !! b) |> splice regs c
-addi :: [Int] -> (Int, Int, Int, Int) -> [Int]
 addi regs (_,a,b,c) = (regs !! a) + b |> splice regs c
 
-mulr :: [Int] -> (Int, Int, Int, Int) -> [Int]
 mulr regs (_,a,b,c) = (regs !! a) * (regs !! b) |> splice regs c
-muli :: [Int] -> (Int, Int, Int, Int) -> [Int]
 muli regs (_,a,b,c) = (regs !! a) * b |> splice regs c
 
-banr :: [Int] -> (Int, Int, Int, Int) -> [Int]
 banr regs (_,a,b,c) = (regs !! a) .&. (regs !! b) |> splice regs c
-bani :: [Int] -> (Int, Int, Int, Int) -> [Int]
 bani regs (_,a,b,c) = (regs !! a) .&. b |> splice regs c
 
-borr :: [Int] -> (Int, Int, Int, Int) -> [Int]
 borr regs (_,a,b,c) = (regs !! a) .|. (regs !! b) |> splice regs c
-bori :: [Int] -> (Int, Int, Int, Int) -> [Int]
 bori regs (_,a,b,c) = (regs !! a) .|. b |> splice regs c
 
-setr :: [Int] -> (Int, Int, Int, Int) -> [Int]
 setr regs (_,a,_,c) = (regs !! a) |> splice regs c
-seti :: [Int] -> (Int, Int, Int, Int) -> [Int]
 seti regs (_,a,_,c) = a |> splice regs c
 
-gtir :: [Int] -> (Int, Int, Int, Int) -> [Int]
 gtir regs (_,a,b,c) = (if a > (regs !! b) then 1 else 0) |> splice regs c
-gtri :: [Int] -> (Int, Int, Int, Int) -> [Int]
 gtri regs (_,a,b,c) = (if (regs !! a) > b then 1 else 0) |> splice regs c
-gtrr :: [Int] -> (Int, Int, Int, Int) -> [Int]
 gtrr regs (_,a,b,c) = (if (regs !! a) > (regs !! b) then 1 else 0) |> splice regs c
 
-eqir :: [Int] -> (Int, Int, Int, Int) -> [Int]
 eqir regs (_,a,b,c) = (if a == (regs !! b) then 1 else 0) |> splice regs c
-eqri :: [Int] -> (Int, Int, Int, Int) -> [Int]
 eqri regs (_,a,b,c) = (if (regs !! a) == b then 1 else 0) |> splice regs c
-eqrr :: [Int] -> (Int, Int, Int, Int) -> [Int]
 eqrr regs (_,a,b,c) = (if (regs !! a) == (regs !! b) then 1 else 0) |> splice regs c
 
 ------------ parsers ---------------
