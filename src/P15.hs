@@ -4,7 +4,9 @@ module P15 where
 
 import Util
 import Data.List
+import Data.Graph.AStar
 import qualified Data.Array.Unboxed as A
+import qualified Data.Map.Strict as M
 
 type RogueMap = A.Array Point Char
 
@@ -13,18 +15,37 @@ p15 = do
   input <- lines <$> slurp 1015
   let raw = parseRogue input
       cave = fmap (\c -> if c == 'G' || c == 'E' then '.' else c) raw
+      goblins = raw
+                |> A.assocs
+                |> filter (\(_,v) -> v == 'G')
+                |> map mkGoblin
+                |> M.fromList
+      elves = raw
+                |> A.assocs
+                |> filter (\(_,v) -> v == 'E')
+                |> map mkElf
+                |> M.fromList
   printRogueMap raw
   putStrLn ""
   mapM_ putStrLn input
 
 ------- problem logic ----------
 
+mkGoblin = id
+mkElf = id
+
 
 
 ----------- utils --------------
 
-getPath :: RogueMap -> Point -> Point -> [Point]
-getPath rm start end = undefined
+-- Consider all shortest paths from start to end. Take their first steps,
+-- and give the one that comes first in reading order
+getFirstStep :: RogueMap -> Point -> Point -> Point
+getFirstStep rm start end =
+  undefined
+  |> map head
+  |> readingOrder
+  |> head
 
 printRogueMap :: RogueMap -> IO ()
 printRogueMap = (mapM_ putStrLn) . showRogueMap

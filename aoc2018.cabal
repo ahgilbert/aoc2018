@@ -22,6 +22,7 @@ executable aoc2018
                      , containers
                      , array
                      , grid
+                     , astar
   other-modules: Util
                , P01
                , P02
