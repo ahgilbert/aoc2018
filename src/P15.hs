@@ -3,6 +3,7 @@
 module P15 where
 
 import Util
+import Data.List
 import qualified Data.Array.Unboxed as A
 
 type RogueMap = A.Array Point Char
@@ -22,6 +23,22 @@ showRogueMap rm =
     let ((xmin,ymin),(xmax,ymax)) = A.bounds rm
         rows = map (\y -> [(x,y) | x <- [xmin..xmax]]) [ymin..ymax]
     in map (map (\k -> rm A.! k)) rows
+
+north = (0,-1)
+west  = (-1,0)
+east  = (1, 0)
+south = (0, 1)
+
+neighbors4 :: Point -> [Point] -- get NWES
+neighbors4 p = map (addPoints p) [north, west, east, south]
+
+sortReadingOrder :: [Point] -> [Point]
+sortReadingOrder ps =
+  let comp (xa,ya) (xb,yb) =
+        if (compare ya yb) == EQ
+        then (compare xa xb)
+        else (compare ya yb)
+  in sortBy comp ps
 
 ----------- parsers ---------------
 

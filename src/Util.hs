@@ -49,6 +49,9 @@ parseNegInt = do
 parseInt :: Parser Int
 parseInt = choice [parseNegInt, parsePosInt]
 
+addPoints :: Point -> Point -> Point
+addPoints (x1,y1) (x2,y2) = (x1 + x2, y1 + y2)
+
 parsePoint :: Parser Point
 parsePoint = do
   x <- parseInt
