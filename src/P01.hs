@@ -15,7 +15,7 @@ p01 = do
   print $ p1
   let nums2 = cycle nums
   let frequencies = scanl (+) 0 nums2
-  let p2s = tail $ scanl folder (True, 0, S.empty) (frequencies) -- tail to drop the seed val
+  let p2s = scanl folder (False, 0, S.empty) (frequencies)
   let p2 = snd3 $ head $ dropWhile (not . fst3) p2s
   print p2
 
