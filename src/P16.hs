@@ -22,17 +22,19 @@ p16 = do
       byOpcode = samples
                  |> sortBy (\s1 s2 -> compare (opcode s1) (opcode s2))
                  |> groupBy (\s1 s2 -> (opcode s1) == (opcode s2))
+      faith = byOpcode
+              |> fmap testOpcode
   putStrLn $ "part 1: " <> (show $ length $ filter (\os -> length os >= 3) results)
   print $ length byOpcode
+  -- print byOpcode
 
-{-
-testOpcode (code, ss) = -- given a set of samples, see which instructions are true for all samples
+testOpcode ss = -- given a set of samples, see which instructions are true for all samples
   instructions
   |> zip [0..]
-  |> fmap (\i -> all (i (before s) (instructions s) == after s) ss)
+  |> map (\(idx,i) -> (idx, all (\s -> i (before s) (instruction s) == (after s)) ss)) -- (idx, bool)
   |> filter snd
   |> map fst
--}
+  |> (\x -> (instsByPos M.! (opcode $ head ss), x))
 
 testSample2 i s = (i (before s) (instruction s)) == (after s)
 
@@ -47,7 +49,9 @@ splice regs reg val =
 
 -------------- instructions -------------------
 instructions = [addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr]
-instsByPos = zip [0..] instructions |> M.fromList
+
+instsByPos = zip [0..] [gtrr, eqri, bori, muli, gtir, eqrr, bani, borr, addr, seti, eqir, mulr, setr, banr, gtri, addi]
+             |> M.fromList
 
 addr regs (a,b,c) = (regs !! a) + (regs !! b) |> splice regs c
 addi regs (a,b,c) = (regs !! a) + b |> splice regs c
