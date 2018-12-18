@@ -17,7 +17,7 @@ data Sample = Sample { before :: [Int], after :: [Int], opcode :: Int, instructi
 p16 :: IO ()
 p16 = do
   input <- slurp 16
-  let samples = fromRight [] $ runParser parseSamples "" input
+  let (samples, prog) = fromRight ([],[]) $ runParser parseChronalClass "" input
       results = map testSample samples
       byOpcode = samples
                  |> sortBy (\s1 s2 -> compare (opcode s1) (opcode s2))
@@ -25,8 +25,13 @@ p16 = do
                  |> map (\ss -> ((opcode $ head ss), ss))
       faith = byOpcode
               |> (map . fmap) testOpcode
+      hope = foldl (chronclass instsByPos) [0,0,0,0] prog
   putStrLn $ "part 1: " <> (show $ length $ filter (\os -> length os >= 3) results)
-  mapM_ print faith
+  -- mapM_ print faith
+  print hope
+
+chronclass :: M.Map Int ([Int] -> (Int, Int, Int) -> [Int]) -> [Int] -> (Int, (Int, Int, Int)) -> [Int]
+chronclass insts regs (i,args) = (insts M.! i) regs args
 
 instructions =
   zip
@@ -38,10 +43,9 @@ instsByOpcode = [(0,setr),(1,eqrr),(2,gtri),(3,muli),(4,eqir),(5,borr),(6,bori),
 
 testOpcode :: [Sample] -> [String]
 testOpcode ss = -- given a set of samples, see which instructions are true for all samples
-  map fst $ filter snd $ fmap (\(iname, i) -> (iname, all (\s -> i (before s) (instruction s) == (after s)) ss)) instructions
-  -- |> fmap (\i -> all (\s -> i (before s) (instruction s) == (after s)) ss) -- (idx, bool)
-  -- |> filter snd
-  -- |> map fst
+  fmap (\(iname, i) -> (iname, all (\s -> i (before s) (instruction s) == (after s)) ss)) instructions
+  |> filter snd
+  |> map fst
 
 testSample2 i s = (i (before s) (instruction s)) == (after s)
 
@@ -82,10 +86,15 @@ eqri regs (a,b,c) = (if (regs !! a) == b then 1 else 0) |> splice regs c
 eqrr regs (a,b,c) = (if (regs !! a) == (regs !! b) then 1 else 0) |> splice regs c
 
 ------------ parsers ---------------
-parseSample :: Parser Sample
-parseSample = do
-  string "Before: "
-  before <- read <$> manyTill asciiChar newline
+parseChronalClass :: Parser ([Sample], [(Int, (Int, Int, Int))])
+parseChronalClass = do
+  samples <- parseSamples
+  many newline
+  insts <- many parseInstruction
+  return (samples, insts)
+
+parseInstruction :: Parser (Int, (Int, Int, Int))
+parseInstruction = do
   i <- parseInt
   space
   a <- parseInt
@@ -94,6 +103,13 @@ parseSample = do
   space
   c <- parseInt
   newline
+  return (i,(a,b,c))
+
+parseSample :: Parser Sample
+parseSample = do
+  string "Before: "
+  before <- read <$> manyTill asciiChar newline
+  (i,(a,b,c)) <- parseInstruction
   string "After: "
   after <- read <$> manyTill asciiChar newline
   return $ Sample { before = before, after = after, opcode = i, instruction = (a,b,c) }
