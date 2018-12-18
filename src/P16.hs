@@ -25,19 +25,21 @@ p16 = do
                  |> map (\ss -> ((opcode $ head ss), ss))
       faith = byOpcode
               |> (map . fmap) testOpcode
-      hope = foldl (chronclass instsByPos) [0,0,0,0] prog
+      hope = foldl (runcmd instsByOpcode) [0,0,0,0] $ prog
   putStrLn $ "part 1: " <> (show $ length $ filter (\os -> length os >= 3) results)
-  -- mapM_ print faith
+  mapM_ print faith
+  print $ length prog
   print hope
 
-chronclass :: M.Map Int ([Int] -> (Int, Int, Int) -> [Int]) -> [Int] -> (Int, (Int, Int, Int)) -> [Int]
-chronclass insts regs (i,args) = (insts M.! i) regs args
+runcmd :: M.Map Int ([Int] -> (Int, Int, Int) -> [Int]) -> [Int] -> (Int, (Int, Int, Int)) -> [Int]
+runcmd insts regs (i,args) = (insts M.! i) regs args
 
 instructions =
   zip
     ["addr", "addi", "mulr", "muli", "banr", "bani", "borr", "bori", "setr", "seti", "gtir", "gtri", "gtrr", "eqir", "eqri", "eqrr"]
-    [addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr]
+    [ addr,   addi,   mulr,   muli,   banr,   bani,   borr,   bori,   setr,   seti,   gtir,   gtri,   gtrr,   eqir,   eqri,   eqrr]
 
+-- by hand, sudoku style
 instsByOpcode = [(0,setr),(1,eqrr),(2,gtri),(3,muli),(4,eqir),(5,borr),(6,bori),(7,mulr),(8,gtrr),(9,seti),(10,banr),(11,eqri),(12,addr),(13,gtir),(14,addi),(15,bani)]
                 |> M.fromList
 
@@ -58,33 +60,28 @@ splice regs reg val =
   (take reg regs) ++ [val] ++ (drop (reg + 1) regs)
 
 -------------- instructions -------------------
-
-instsByPos = zip [0..] [gtrr, eqri, bori, muli, gtir, eqrr, bani, borr, addr, seti, eqir, mulr, setr, banr, gtri, addi]
-             |> M.fromList
-
 addr regs (a,b,c) = (regs !! a) + (regs !! b) |> splice regs c
-addi regs (a,b,c) = (regs !! a) + b |> splice regs c
+addi regs (a,b,c) = (regs !! a) + b           |> splice regs c
 
 mulr regs (a,b,c) = (regs !! a) * (regs !! b) |> splice regs c
-muli regs (a,b,c) = (regs !! a) * b |> splice regs c
+muli regs (a,b,c) = (regs !! a) * b           |> splice regs c
 
 banr regs (a,b,c) = (regs !! a) .&. (regs !! b) |> splice regs c
-bani regs (a,b,c) = (regs !! a) .&. b |> splice regs c
+bani regs (a,b,c) = (regs !! a) .&. b           |> splice regs c
 
 borr regs (a,b,c) = (regs !! a) .|. (regs !! b) |> splice regs c
-bori regs (a,b,c) = (regs !! a) .|. b |> splice regs c
+bori regs (a,b,c) = (regs !! a) .|. b           |> splice regs c
 
 setr regs (a,_,c) = (regs !! a) |> splice regs c
-seti regs (a,_,c) = a |> splice regs c
+seti regs (a,_,c) = a           |> splice regs c
 
-gtir regs (a,b,c) = (if a > (regs !! b) then 1 else 0) |> splice regs c
-gtri regs (a,b,c) = (if (regs !! a) > b then 1 else 0) |> splice regs c
+gtir regs (a,b,c) = (if a           > (regs !! b) then 1 else 0) |> splice regs c
+gtri regs (a,b,c) = (if (regs !! a) > b           then 1 else 0) |> splice regs c
 gtrr regs (a,b,c) = (if (regs !! a) > (regs !! b) then 1 else 0) |> splice regs c
 
-eqir regs (a,b,c) = (if a == (regs !! b) then 1 else 0) |> splice regs c
-eqri regs (a,b,c) = (if (regs !! a) == b then 1 else 0) |> splice regs c
+eqir regs (a,b,c) = (if a           == (regs !! b) then 1 else 0) |> splice regs c
+eqri regs (a,b,c) = (if (regs !! a) == b           then 1 else 0) |> splice regs c
 eqrr regs (a,b,c) = (if (regs !! a) == (regs !! b) then 1 else 0) |> splice regs c
-
 ------------ parsers ---------------
 parseChronalClass :: Parser ([Sample], [(Int, (Int, Int, Int))])
 parseChronalClass = do
