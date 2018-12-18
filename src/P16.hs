@@ -22,25 +22,28 @@ p16 = do
       byOpcode = samples
                  |> sortBy (\s1 s2 -> compare (opcode s1) (opcode s2))
                  |> groupBy (\s1 s2 -> (opcode s1) == (opcode s2))
+                 |> map (\ss -> ((opcode $ head ss), ss))
       faith = byOpcode
-              |> fmap testOpcode
+              |> (map . fmap) testOpcode
   putStrLn $ "part 1: " <> (show $ length $ filter (\os -> length os >= 3) results)
-  print $ length byOpcode
-  -- print byOpcode
+  mapM_ print faith
 
+instructions =
+  zip
+    ["addr", "addi", "mulr", "muli", "banr", "bani", "borr", "bori", "setr", "seti", "gtir", "gtri", "gtrr", "eqir", "eqri", "eqrr"]
+    [addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr]
+
+testOpcode :: [Sample] -> [String]
 testOpcode ss = -- given a set of samples, see which instructions are true for all samples
-  instructions
-  |> zip [0..]
-  |> map (\(idx,i) -> (idx, all (\s -> i (before s) (instruction s) == (after s)) ss)) -- (idx, bool)
-  |> filter snd
-  |> map fst
-  |> (\x -> (instsByPos M.! (opcode $ head ss), x))
+  map fst $ filter snd $ fmap (\(iname, i) -> (iname, all (\s -> i (before s) (instruction s) == (after s)) ss)) instructions
+  -- |> fmap (\i -> all (\s -> i (before s) (instruction s) == (after s)) ss) -- (idx, bool)
+  -- |> filter snd
+  -- |> map fst
 
 testSample2 i s = (i (before s) (instruction s)) == (after s)
 
 testSample s =
-  map (\i -> i (before s) (instruction s)) instructions
-  |> zip [0,1..]
+  (map . fmap) (\i -> i (before s) (instruction s)) instructions
   |> filter (\(_,o) -> o == (after s))
 
 splice :: [Int] -> Int -> Int -> [Int]
@@ -48,7 +51,6 @@ splice regs reg val =
   (take reg regs) ++ [val] ++ (drop (reg + 1) regs)
 
 -------------- instructions -------------------
-instructions = [addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr]
 
 instsByPos = zip [0..] [gtrr, eqri, bori, muli, gtir, eqrr, bani, borr, addr, seti, eqir, mulr, setr, banr, gtri, addi]
              |> M.fromList
