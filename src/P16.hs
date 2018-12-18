@@ -33,6 +33,9 @@ instructions =
     ["addr", "addi", "mulr", "muli", "banr", "bani", "borr", "bori", "setr", "seti", "gtir", "gtri", "gtrr", "eqir", "eqri", "eqrr"]
     [addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr]
 
+instsByOpcode = [(0,setr),(1,eqrr),(2,gtri),(3,muli),(4,eqir),(5,borr),(6,bori),(7,mulr),(8,gtrr),(9,seti),(10,banr),(11,eqri),(12,addr),(13,gtir),(14,addi),(15,bani)]
+                |> M.fromList
+
 testOpcode :: [Sample] -> [String]
 testOpcode ss = -- given a set of samples, see which instructions are true for all samples
   map fst $ filter snd $ fmap (\(iname, i) -> (iname, all (\s -> i (before s) (instruction s) == (after s)) ss)) instructions
