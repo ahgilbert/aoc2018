@@ -39,3 +39,4 @@ executable aoc2018
                , P13
                , P15
                , P16
+               , P18

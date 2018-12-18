@@ -42,6 +42,9 @@ south = (0, 1)
 neighbors4 :: Point -> [Point] -- get NWES
 neighbors4 p = map (addPoints p) [north, west, east, south]
 
+neighbors8 :: Point -> [Point] -- get NW N NE W E SW S SE
+neighbors8 p = map (addPoints p) [((-1),(-1)),((-1),0),((-1),1),(0,(-1)),(0,1),(1,(-1)),(1,0),(1,1)]
+
 addPoints :: Point -> Point -> Point
 addPoints (x1,y1) (x2,y2) = (x1 + x2, y1 + y2)
 
