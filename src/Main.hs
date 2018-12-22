@@ -21,5 +21,5 @@ import P18
 
 main :: IO ()
 main = do
-  p18
+  p15
 

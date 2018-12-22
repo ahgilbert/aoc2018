@@ -22,23 +22,26 @@ p15 = do
       goblins = raw
                 |> A.assocs
                 |> filter (\(_,v) -> v == 'G')
-                |> map mkGoblin
+                |> (map . fmap) mkGoblin
                 |> M.fromList
       elves = raw
                 |> A.assocs
                 |> filter (\(_,v) -> v == 'E')
-                |> map mkElf
+                |> (map . fmap) mkElf
                 |> M.fromList
-  printRogueMap raw
+  printRogueMap cave
   putStrLn ""
   mapM_ putStrLn input
 
 ------- problem logic ----------
 
-mkGoblin = id
-mkElf = id
+data Creature = Creature { hp :: Int, attack :: Int }
+mkCreature = Creature { hp = 200, attack = 3 }
 
+mkGoblin = const mkCreature
+mkElf = const mkCreature
 
+getPassability = undefined
 
 ----------- utils --------------
 
