@@ -23,6 +23,7 @@ executable aoc2018
                      , array
                      , grid
                      , astar
+                     , mtl
   other-modules: Util
                , P01
                , P02
@@ -40,3 +41,4 @@ executable aoc2018
                , P15
                , P16
                , P18
+               , P22
