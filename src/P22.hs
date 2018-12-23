@@ -3,35 +3,34 @@
 module P22 where
 
 import Util
-import Control.Monad.State.Strict
+import Data.Maybe (fromJust)
 import qualified Data.Map.Strict as M
 
-depth = 8787
-target = (10,725)
+-- depth = 8787
+-- target = (10,725)
 
-data MazeType = Rocky | Narrow | Wet
-type ModeMaze = State (M.Map Point Int)
+type ModeMap = M.Map Point Int
 
 p22 :: IO ()
-p22 = do
-  print (depth, target)
+p22 = print $ p22' 8727 (10,725)
 
-getOrUpdate :: (Ord k) => k -> State (M.Map k v) v -> State (M.Map k v) v
-getOrUpdate k ifEmptyState = do
-  maybeVal <- gets (M.lookup k)
-  case maybeVal of
-    Just v -> return v
-    Nothing -> do
-      ifEmpty <- ifEmptyState
-      modify (M.insert k ifEmpty)
-      return ifEmpty
+p22' :: Int -> (Int, Int) -> ModeMap
+p22' depth target@(x,y) =
+  let northEdge = [(x,0) | x <- [0..y]]
+      north = map (\p@(xx,yy) -> (p,(x * 16807) `mod` 20183)) northEdge
+      m = M.fromList north
+  in m
 
--- todo: memoize
-geoIndex p@(x,y)
-  | p == target = return 0
-  | y == 0 = return $ x * 16807
-  | x == 0 = return $ y * 48271
-  | True = do
-    l <- getOrUpdate (x-1,y) (geoIndex (x-1,y))
-    u <- getOrUpdate (x,y-1) (geoIndex (x,y-1))
-    return (l * u)
+erosionLevel :: Int -> Point -> ModeMap -> Point -> ModeMap
+erosionLevel depth target m p@(x,y)
+  | p == target = M.insert p 0 m
+  | x == 0 || y == 0 = M.insert p (el depth target p) m
+  | True = M.insert p ((grab (x-1,y) * grab (x,y-1)) `mod` 20183) m
+  where grab p = fromJust $ M.lookup p m
+
+el :: Int -> Point -> Point -> Int
+el d t p@(x,y)
+  | p == t = 0
+  | x == 0 = (d + y * 48271) `mod` 20183
+  | y == 0 = (d + x * 16807) `mod` 20183
+  | True   = undefined
