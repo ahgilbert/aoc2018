@@ -9,20 +9,20 @@ import Data.List
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
+-- TODO: On reduce, take a char blacklist whose contents are always removed
 p05 :: IO ()
 p05 = do
   input <- slurp 5
   let polymer = fromRight [] $ (runParser parsePolymer "") input
-  let reduced = showPolymer $ zipReduce polymer
-  print $ length reduced
-  let allChars = nub $ map (toLower . c) polymer
+  print $ "Part 1: " <> (show $ length $ showPolymer $ zipReduce polymer)
+  let allChars = nub $ map c polymer
   let allSeeds = map (\ch -> filter (not . (matches ch)) polymer) allChars
   let allReductions = map (length . zipReduce) allSeeds
   let bestReduction = minimum allReductions
   print bestReduction
 
 matches :: Char -> Atom -> Bool
-matches ch a = ch == (toLower $ c a)
+matches ch a = ch == c a
 
 data Polarity = Up | Down
   deriving (Show, Eq)
@@ -57,12 +57,12 @@ isCollision a b = (toLower $ c a) == (toLower $ c b) && (p a) /= (p b)
 parseUp :: Parser Atom
 parseUp = do
   c <- upperChar
-  return Atom { c = c, p = Up }
+  return Atom { c = toLower c, p = Up }
 
 parseDown :: Parser Atom
 parseDown = do
   c <- lowerChar
-  return Atom { c = c, p = Down }
+  return Atom { c = toLower c, p = Down }
 
 parseAtom :: Parser Atom
 parseAtom = choice [parseUp, parseDown]
