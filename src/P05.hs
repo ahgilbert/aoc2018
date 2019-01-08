@@ -14,12 +14,14 @@ p05 :: IO ()
 p05 = do
   input <- slurp 5
   let polymer = fromRight [] $ (runParser parsePolymer "") input
-  print $ "Part 1: " <> (show $ length $ showPolymer $ zipReduce polymer)
+  print $ "Part 1: " <> (show $ length $ showPolymer $ zipReduce '0' polymer)
   let allChars = nub $ map c polymer
-  let allSeeds = map (\ch -> filter (not . (matches ch)) polymer) allChars
-  let allReductions = map (length . zipReduce) allSeeds
-  let bestReduction = minimum allReductions
-  print bestReduction
+  let allReductions = map (\c -> zipReduce c polymer) allChars  -- (length . zipReduce) allSeeds
+  let bestReduction = allReductions
+                      |> map length
+                      |> minimum
+                      |> show
+  print $ "Part 2: " <> bestReduction
 
 matches :: Char -> Atom -> Bool
 matches ch a = ch == c a
@@ -35,20 +37,24 @@ type Zipper a = ([a],[a])
 mkZipper :: [a] -> Zipper a
 mkZipper as = ([],as)
 
-zipReduce :: [Atom] -> [Atom]
-zipReduce as =
+zipReduce :: Char -> [Atom] -> [Atom]
+zipReduce nogo as =
   mkZipper as
-  |> reduceGo
+  |> reduceGo nogo
   |> fst
   |> reverse
 
-reduceGo :: Zipper Atom -> Zipper Atom
-reduceGo ((a:as),(b:bs)) =
-  if isCollision a b
-  then reduceGo (as,bs)
-  else reduceGo ((b:a:as),bs)
-reduceGo (as,[]) = (as,[])
-reduceGo ([],(a:bs)) = reduceGo ([a],bs)
+reduceGo :: Char -> Zipper Atom -> Zipper Atom
+reduceGo nogo ((a:as),(b:bs)) =
+  if c b == nogo
+  then reduceGo nogo ((a:as),bs)
+  else if c a == nogo
+  then reduceGo nogo (as,b:bs)
+  else if isCollision a b
+  then reduceGo nogo (as,bs)
+  else reduceGo nogo ((b:a:as),bs)
+reduceGo _ (as,[]) = (as,[])
+reduceGo nogo ([],(a:bs)) = reduceGo nogo ([a],bs)
 
 isCollision :: Atom -> Atom -> Bool
 isCollision a b = (toLower $ c a) == (toLower $ c b) && (p a) /= (p b)
@@ -71,4 +77,4 @@ parsePolymer :: Parser [Atom]
 parsePolymer = many parseAtom
 
 showPolymer :: [Atom] -> String
-showPolymer as = map c as
+showPolymer as = map (\a -> if p a == Up then toUpper (c a) else c a) as
